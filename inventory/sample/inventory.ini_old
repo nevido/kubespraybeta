@@ -2,33 +2,21 @@
 # ## different ip than the default iface
 # ## We should set etcd_member_name for etcd cluster. The node that is not a etcd member do not need to set the value, or can set the empty string value.
 [all]
-master1 ansible_host=10.1.2.4   ip=10.1.2.4 
-master2 ansible_host=10.1.2.5   ip=10.1.2.5
-master3 ansible_host=10.1.2.7   ip=10.1.2.7 
-worker1 ansible_host=10.1.2.9   ip=10.1.2.9 
-worker2 ansible_host=10.1.2.10   ip=10.1.2.10
-mgmt1 ansible_host=10.1.2.11   ip=10.1.2.11
-proxy1 ansible_host=10.1.2.8   ip=10.1.2.8
+test-m ansible_host=10.1.2.4   ip=10.1.2.4 
+test-w ansible_host=10.1.2.5   ip=10.1.2.5 
 
 # ## configure a bastion host if your nodes are not directly reachable
 # [bastion]
 # bastion ansible_host=x.x.x.x ansible_user=some_user
 
 [kube_control_plane]
-master1
-master2
-master3
+test-m
 
 [etcd]
-master1
-master2
-master3
+test-m
 
 [kube-node]
-worker1
-worker2
-mgmt1
-proxy1
+test-w
 
 [calico-rr]
 
