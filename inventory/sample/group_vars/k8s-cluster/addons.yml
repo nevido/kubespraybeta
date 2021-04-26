@@ -108,7 +108,10 @@ ingress_publish_status_address: ""
 #   9000: "default/example-go:8080"
 # ingress_nginx_configmap_udp_services:
 #   53: "kube-system/coredns:53"
-# ingress_nginx_extra_args:
+ingress_nginx_extra_args:
+   - --proxy-read-timeout=300
+   - --proxy-send-tiemout=300
+   - --worker-shutdown-timeout=600m
 #   - --default-ssl-certificate=default/foo-tls
 
 # ambassador ingress controller deployment
