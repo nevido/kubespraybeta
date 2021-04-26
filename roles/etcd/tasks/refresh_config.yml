@@ -4,7 +4,9 @@
     src: etcd.env.j2
     dest: /etc/etcd.env
   notify: restart etcd
-  when: is_etcd_master and etcd_cluster_setup
+  when:
+    - not ansible_check_mode 
+    - is_etcd_master and etcd_cluster_setup
 
 - name: Refresh config | Create etcd-events config file
   template:

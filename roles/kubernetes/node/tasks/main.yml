@@ -62,13 +62,17 @@
   modprobe:
     name: br_netfilter
     state: present
-  when: modinfo_br_netfilter.rc == 0
+  when:
+    - not ansible_check_mode
+    - modinfo_br_netfilter.rc == 0
 
 - name: Persist br_netfilter module
   copy:
     dest: /etc/modules-load.d/kubespray-br_netfilter.conf
     content: br_netfilter
-  when: modinfo_br_netfilter.rc == 0
+  when:
+    - not ansible_check_mode 
+    - modinfo_br_netfilter.rc == 0
 
 # kube-proxy needs net.bridge.bridge-nf-call-iptables enabled when found if br_netfilter is not a module
 - name: Check if bridge-nf-call-iptables key exists
@@ -84,7 +88,9 @@
     sysctl_file: "{{ sysctl_file_path }}"
     value: "1"
     reload: yes
-  when: sysctl_bridge_nf_call_iptables.rc == 0
+  when:
+    - not ansible_check_mode 
+    - sysctl_bridge_nf_call_iptables.rc == 0
   with_items:
     - net.bridge.bridge-nf-call-iptables
     - net.bridge.bridge-nf-call-arptables
@@ -99,7 +105,9 @@
     - ip_vs_rr
     - ip_vs_wrr
     - ip_vs_sh
-  when: kube_proxy_mode == 'ipvs'
+  when:
+    - not ansible_check_mode 
+    - kube_proxy_mode == 'ipvs'
   tags:
     - kube-proxy
 
@@ -110,6 +118,7 @@
   register: modprobe_nf_conntrack_ipv4
   ignore_errors: yes
   when:
+    - not ansible_check_mode
     - kube_proxy_mode == 'ipvs'
   tags:
     - kube-proxy
@@ -125,7 +134,9 @@
       {% if modprobe_nf_conntrack_ipv4 is success -%}
       nf_conntrack_ipv4
       {%-   endif -%}
-  when: kube_proxy_mode == 'ipvs'
+  when:
+    - not ansible_check_mode 
+    - kube_proxy_mode == 'ipvs'
   tags:
     - kube-proxy
 

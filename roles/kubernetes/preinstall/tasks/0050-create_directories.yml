@@ -63,7 +63,7 @@
     - inventory_hostname in groups['k8s-cluster']
     - kube_cert_dir != kube_cert_compat_dir
     - not kube_cert_compat_dir_check.stat.exists
-
+    - not ansible_check_mode
 - name: Create cni directories
   file:
     path: "{{ item }}"

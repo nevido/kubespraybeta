@@ -29,6 +29,8 @@
     remote_src: yes
     mode: "0600"
     backup: yes
+  when:
+    - not ansible_check_mode
 
 - name: Create kube artifacts dir
   file:
@@ -39,20 +41,25 @@
   connection: local
   become: no
   run_once: yes
-  when: kubeconfig_localhost
+  when:
+    - not ansible_check_mode 
+    - kubeconfig_localhost
 
 - name: Wait for k8s apiserver
   wait_for:
     host: "{{ kube_apiserver_access_address }}"
     port: "{{ kube_apiserver_port }}"
     timeout: 180
-
+  when:
+    - not ansible_check_mode
 - name: Create external_kubeconfig dir
   file:
     path: "{{ kube_config_dir }}/external_kubeconfig"
     mode: "0750"
     state: directory
-  when: kubeconfig_localhost
+  when:
+    - not ansible_check_mode 
+    - kubeconfig_localhost
 
 # NOTE(mattymo): Please forgive this workaround
 - name: Generate admin kubeconfig with external api endpoint  # noqa 302
@@ -69,12 +76,16 @@
   environment: "{{ proxy_env }}"
   run_once: yes
   register: raw_admin_kubeconfig
-  when: kubeconfig_localhost
+  when:
+    - not ansible_check_mode 
+    - kubeconfig_localhost
 
 - name: Convert kubeconfig to YAML
   set_fact:
     admin_kubeconfig: "{{ raw_admin_kubeconfig.stdout | from_yaml }}"
-  when: kubeconfig_localhost
+  when:
+    - not ansible_check_mode 
+    - kubeconfig_localhost
 
 - name: Override username in kubeconfig
   set_fact:
@@ -87,7 +98,9 @@
     override_cluster_name: "{{ { 'clusters': [ { 'cluster': cluster_infos, 'name': cluster_name } ] } }}"
     override_context: "{{ { 'contexts': [ { 'context': { 'user': username, 'cluster': cluster_name }, 'name': context } ], 'current-context': context } }}"
     override_user: "{{ { 'users': [ { 'name': username, 'user': user_certs  } ] } }}"
-  when: kubeconfig_localhost
+  when:
+    - not ansible_check_mode 
+    - kubeconfig_localhost
 
 - name: Write admin kubeconfig on ansible host
   copy:
@@ -98,7 +111,9 @@
   connection: local
   become: no
   run_once: yes
-  when: kubeconfig_localhost
+  when:
+    - not ansible_check_mode 
+    - kubeconfig_localhost
 
 - name: Copy kubectl binary to ansible host
   fetch:
@@ -108,7 +123,9 @@
     validate_checksum: no
   become: no
   run_once: yes
-  when: kubectl_localhost
+  when:  
+    - not ansible_check_mode
+    - kubectl_localhost
 
 - name: create helper script kubectl.sh on ansible host
   copy:
@@ -121,4 +138,6 @@
   run_once: yes
   delegate_to: localhost
   connection: local
-  when: kubectl_localhost and kubeconfig_localhost
+  when:
+    - not ansible_check_mode 
+    - kubectl_localhost and kubeconfig_localhost

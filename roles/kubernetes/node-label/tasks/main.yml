@@ -9,7 +9,9 @@
   until: result.status == 200
   retries: 10
   delay: 6
-  when: inventory_hostname == groups['kube_control_plane'][0]
+  when: 
+    - not ansible_check_mode
+    - inventory_hostname == groups['kube_control_plane'][0]
 
 - name: Set role node label to empty list
   set_fact:
@@ -32,6 +34,7 @@
     inventory_node_labels: "{{ inventory_node_labels + [ '%s=%s'|format(item.key, item.value) ] }}"
   loop: "{{ node_labels|d({})|dict2items }}"
   when:
+    - not ansible_check_mode
     - node_labels is defined
     - node_labels is mapping
 

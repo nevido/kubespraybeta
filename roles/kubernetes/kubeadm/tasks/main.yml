@@ -50,7 +50,9 @@
 - name: Set kubeadm_token to generated token
   set_fact:
     kubeadm_token: "{{ temp_token.stdout }}"
-  when: kubeadm_token is not defined
+  when:
+    - not ansible_check_mode 
+    - kubeadm_token is not defined
 
 - name: Set kubeadm api version to v1beta2
   set_fact:
@@ -61,7 +63,10 @@
     src: "kubeadm-client.conf.{{ kubeadmConfig_api_version }}.j2"
     dest: "{{ kube_config_dir }}/kubeadm-client.conf"
     backup: yes
-  when: not is_kube_master
+  when:
+    - not ansible_check_mode 
+    - not is_kube_master
+
 
 - name: Join to cluster if needed
   environment:
@@ -103,6 +108,7 @@
     line: '    server: {{ kube_apiserver_endpoint }}'
     backup: yes
   when:
+    - not ansible_check_mode
     - kubeadm_config_api_fqdn is not defined
     - not is_kube_master
     - kubeadm_discovery_address != kube_apiserver_endpoint | replace("https://", "")
@@ -121,6 +127,7 @@
   delegate_to: "{{ groups['kube_control_plane']|first }}"
   delegate_facts: false
   when:
+    - not ansible_check_mode  
     - kubeadm_config_api_fqdn is not defined
     - kubeadm_discovery_address != kube_apiserver_endpoint | replace("https://", "")
     - kube_proxy_deployed
@@ -134,6 +141,8 @@
     owner: root
     group: root
     mode: "0644"
+  when:
+    - not ansible_check_mode
 
 - name: Restart all kube-proxy pods to ensure that they load the new configmap
   command: "{{ bin_dir }}/kubectl --kubeconfig {{ kube_config_dir }}/admin.conf delete pod -n kube-system -l k8s-app=kube-proxy --force --grace-period=0"
@@ -141,6 +150,7 @@
   delegate_to: "{{ groups['kube_control_plane']|first }}"
   delegate_facts: false
   when:
+    - not ansible_check_mode
     - kubeadm_config_api_fqdn is not defined
     - kubeadm_discovery_address != kube_apiserver_endpoint | replace("https://", "")
     - kube_proxy_deployed
@@ -150,6 +160,7 @@
 - name: Extract etcd certs from control plane if using etcd kubeadm mode
   include_tasks: kubeadm_etcd_node.yml
   when:
+    - not ansible_check_mode
     - etcd_kubeadm_enabled
     - inventory_hostname not in groups['kube_control_plane']
     - kube_network_plugin in ["calico", "flannel", "canal", "cilium"] or cilium_deploy_additionally | default(false) | bool

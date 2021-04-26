@@ -89,6 +89,7 @@
   check_mode: no
   run_once: yes
   when:
+    - not ansible_check_mode
     - is_etcd_master
     - etcd_cluster_setup
   tags:
@@ -129,7 +130,10 @@
   ignore_errors: true
   changed_when: false
   check_mode: no
-  when: is_etcd_master and etcd_cluster_setup
+  when: 
+    - not ansible_check_mode
+    - is_etcd_master and etcd_cluster_setup
+   
   tags:
     - facts
   environment:
@@ -158,7 +162,9 @@
 - name: Configure | Join member(s) to etcd cluster one at a time
   include_tasks: join_etcd_member.yml
   with_items: "{{ groups['etcd'] }}"
-  when: inventory_hostname == item and etcd_cluster_setup and etcd_member_in_cluster.rc != 0 and etcd_cluster_is_healthy.rc == 0
+  when: 
+    - not ansible_check_mode
+    - inventory_hostname == item and etcd_cluster_setup and etcd_member_in_cluster.rc != 0 and etcd_cluster_is_healthy.rc == 0
 
 - name: Configure | Join member(s) to etcd-events cluster one at a time
   include_tasks: join_etcd-events_member.yml

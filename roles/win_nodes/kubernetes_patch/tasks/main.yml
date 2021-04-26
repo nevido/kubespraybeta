@@ -27,7 +27,9 @@
         patch ds kube-proxy --namespace=kube-system --type=strategic -p
         '{"spec":{"template":{"spec":{"nodeSelector":{"{{ kube_proxy_nodeselector }}":"linux"} }}}}'
       register: patch_kube_proxy_state
-      when: current_kube_proxy_state.stdout | trim | lower != "linux"
+      when: 
+        - not ansible_check_mode
+        - current_kube_proxy_state.stdout | trim | lower != "linux"
 
     - debug: msg={{ patch_kube_proxy_state.stdout_lines }}
       when: patch_kube_proxy_state is not skipped
@@ -36,4 +38,5 @@
       when: patch_kube_proxy_state is not skipped
   tags: init
   when:
+    - not ansible_check_mode
     - kube_proxy_deployed

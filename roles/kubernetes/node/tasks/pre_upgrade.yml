@@ -23,13 +23,17 @@
   args:
     creates: "/var/lib/cni"
   failed_when: false
-  when: kubelet_container_check.rc == 0
+  when:
+    - not ansible_check_mode 
+    - kubelet_container_check.rc == 0
 
 - name: "Pre-upgrade | ensure kubelet container service is stopped if using host deployment"
   service:
     name: kubelet
     state: stopped
-  when: kubelet_container_check.rc == 0
+  when: 
+    - not ansible_check_mode
+    - kubelet_container_check.rc == 0
 
 - name: "Pre-upgrade | ensure kubelet container is removed if using host deployment"
   shell: >-
@@ -44,4 +48,6 @@
   retries: 4
   until: remove_kubelet_container.rc == 0
   delay: 5
-  when: kubelet_container_check.rc == 0
+  when: 
+    - not ansible_check_mode 
+    - kubelet_container_check.rc == 0

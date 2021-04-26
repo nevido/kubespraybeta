@@ -48,7 +48,9 @@
 - name: "Set calico_pool_conf"
   set_fact:
     calico_pool_conf: '{{ calico.stdout | from_json }}'
-  when: calico.rc == 0 and calico.stdout
+  when: 
+    - not ansible_check_mode
+    - calico.rc == 0 and calico.stdout
 
 - name: "Check if inventory match current cluster configuration"
   assert:
@@ -59,4 +61,5 @@
       - not calico_pool_conf.spec.vxlanMode is defined or calico_pool_conf.spec.vxlanMode == calico_vxlan_mode
     msg: "Your inventory doesn't match the current cluster configuration"
   when:
+    - not ansible_check_mode
     - calico_pool_conf is defined

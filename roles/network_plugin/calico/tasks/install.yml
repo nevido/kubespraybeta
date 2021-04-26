@@ -74,6 +74,7 @@
   delay: "{{ retry_stagger | random + 3 }}"
   changed_when: false
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
 
 - name: Calico | Ensure that calico_pool_cidr is within kube_pods_subnet when defined
@@ -81,6 +82,7 @@
     that: "[calico_pool_cidr] | ipaddr(kube_pods_subnet) | length == 1"
     msg: "{{ calico_pool_cidr }} is not within or equal to {{ kube_pods_subnet }}"
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
     - 'calico_conf.stdout == "0"'
     - calico_pool_cidr is defined
@@ -97,6 +99,7 @@
   delay: "{{ retry_stagger | random + 3 }}"
   changed_when: false
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
     - enable_dual_stack_networks
 
@@ -105,6 +108,7 @@
     that: "[calico_pool_cidr_ipv6] | ipaddr(kube_pods_subnet_ipv6) | length == 1"
     msg: "{{ calico_pool_cidr_ipv6 }} is not within or equal to {{ kube_pods_subnet_ipv6 }}"
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
     - calico_conf_ipv6.stdout is defined and calico_conf_ipv6.stdout == "0"
     - calico_pool_cidr_ipv6 is defined
@@ -119,6 +123,7 @@
         -e '/^\s{2,4}annotations:/{:1;/\(devel\)$/!{N;b 1}; /.*/d}'
         {{ local_release_dir }}/calico-{{ calico_version }}-kdd-crds/*.yaml
       when:
+        - not ansible_check_mode
         - calico_version is version('v3.17.0', '<')
 
     - name: Calico | Create calico manifests for kdd
@@ -134,8 +139,10 @@
         filename: "{{ kube_config_dir }}/kdd-crds.yml"
         state: "latest"
       when:
+        - not ansible_check_mode
         - inventory_hostname == groups['kube_control_plane'][0]
   when:
+    - not ansible_check_mode
     - inventory_hostname in groups['kube_control_plane']
     - calico_datastore == "kdd"
 
@@ -157,6 +164,7 @@
           "vxlanMode": "{{ calico_vxlan_mode }}",
           "natOutgoing": {{ nat_outgoing|default(false) and not peer_with_router|default(false) }} }}
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
     - 'calico_conf.stdout == "0"'
 
@@ -176,6 +184,7 @@
           "vxlanMode": "{{ calico_vxlan_mode_ipv6 }}",
           "natOutgoing": {{ nat_outgoing_ipv6|default(false) and not peer_with_router_ipv6|default(false) }} }}
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
     - calico_conf_ipv6.stdout is defined and calico_conf_ipv6.stdout == "0"
     - calico_version is version("v3.3.0", ">=")
@@ -191,6 +200,7 @@
   set_fact:
     nodeToNodeMeshEnabled: "false"
   when:
+    - not ansible_check_mode
     - peer_with_router|default(false) or peer_with_calico_rr|default(false)
     - inventory_hostname in groups['k8s-cluster']
   run_once: yes
@@ -215,6 +225,7 @@
           "serviceExternalIPs": {{ _service_external_ips|default([]) }} }}
   changed_when: false
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
 
 - name: Calico | Configure peering with router(s) at global scope
@@ -239,6 +250,7 @@
   with_items:
     - "{{ peers|selectattr('scope','defined')|selectattr('scope','equalto', 'global')|list|default([]) }}"
   when:
+    - not ansible_check_mode 
     - inventory_hostname == groups['kube_control_plane'][0]
     - peer_with_router|default(false)
 
@@ -265,6 +277,7 @@
   with_items:
     - "{{ groups['calico-rr'] | default([]) }}"
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
     - peer_with_calico_rr|default(false)
 
@@ -291,6 +304,7 @@
   with_items:
     - "{{ groups['calico-rr'] | default([]) }}"
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
     - peer_with_calico_rr|default(false)
 
@@ -306,6 +320,7 @@
     - {name: calico, file: calico-crb.yml, type: clusterrolebinding}
   register: calico_node_manifests
   when:
+    - not ansible_check_mode
     - inventory_hostname in groups['kube_control_plane']
     - rbac_enabled or item.type not in rbac_resources
 
@@ -317,6 +332,7 @@
     - {name: calico, file: calico-typha.yml, type: typha}
   register: calico_node_typha_manifest
   when:
+    - not ansible_check_mode
     - inventory_hostname in groups['kube_control_plane']
     - typha_enabled and calico_datastore == "kdd"
 
@@ -332,6 +348,7 @@
     - "{{ calico_node_manifests.results }}"
     - "{{ calico_node_typha_manifest.results }}"
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
     - not item is skipped
   loop_control:
@@ -341,6 +358,7 @@
   wait_for:
     path: /etc/cni/net.d/calico-kubeconfig
   when:
+    - not ansible_check_mode
     - inventory_hostname not in groups['kube_control_plane']
     - calico_datastore == "kdd"
 
@@ -366,6 +384,7 @@
   until: output.rc == 0
   delay: "{{ retry_stagger | random + 3 }}"
   when:
+    - not ansible_check_mode
     - peer_with_router|default(false)
     - inventory_hostname in groups['k8s-cluster']
     - local_as is defined
@@ -394,5 +413,6 @@
   with_items:
     - "{{ peers|selectattr('scope','undefined')|list|default([]) | union(peers|selectattr('scope','defined')|selectattr('scope','equalto', 'node')|list|default([])) }}"
   when:
+    - not ansible_check_mode
     - peer_with_router|default(false)
     - inventory_hostname in groups['k8s-cluster']

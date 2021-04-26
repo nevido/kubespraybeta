@@ -28,6 +28,8 @@
     src: "kubelet-config.{{ kubeletConfig_api_version }}.yaml.j2"
     dest: "{{ kube_config_dir }}/kubelet-config.yaml"
   notify: Kubelet | restart kubelet
+  when:
+    - not ansible_check_mode
   tags:
     - kubelet
     - kubeadm
@@ -38,6 +40,8 @@
     dest: "/etc/systemd/system/kubelet.service"
     backup: "yes"
   notify: Node | restart kubelet
+  when:
+    - not ansible_check_mode
   tags:
     - kubelet
     - kubeadm
@@ -50,6 +54,8 @@
     name: kubelet
     enabled: yes
     state: started
+  when:
+    - not ansible_check_mode
   tags:
     - kubelet
   notify: Kubelet | restart kubelet

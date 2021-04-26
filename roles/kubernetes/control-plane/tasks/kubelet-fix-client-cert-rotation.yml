@@ -7,6 +7,8 @@
     backup: yes
   notify:
     - "Master | reload kubelet"
+  when:
+    - not ansible_check_mode
 
 - name: Fixup kubelet client cert rotation 2/2
   lineinfile:
@@ -16,3 +18,5 @@
     backup: yes
   notify:
     - "Master | reload kubelet"
+  when:
+    - not ansible_check_mode

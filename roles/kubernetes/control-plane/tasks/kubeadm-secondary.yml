@@ -35,6 +35,7 @@
     mode: 0640
     backup: yes
   when:
+    - not ansible_check_mode
     - inventory_hostname != groups['kube_control_plane']|first
     - not kubeadm_already_run.stat.exists
 
@@ -43,7 +44,8 @@
     host: "{{ kubeadm_discovery_address.split(':')[0] }}"
     port: "{{ kubeadm_discovery_address.split(':')[1] }}"
     timeout: 180
-
+  when:
+    - not ansible_check_mode
 
 - name: check already run
   debug:
@@ -64,5 +66,6 @@
   throttle: 1
   until: kubeadm_join_control_plane is succeeded
   when:
+    - not ansible_check_mode 
     - inventory_hostname != groups['kube_control_plane']|first
     - kubeadm_already_run is not defined or not kubeadm_already_run.stat.exists

@@ -9,11 +9,14 @@
   until: result.status == 200
   retries: 20
   delay: 1
-  when: inventory_hostname == groups['kube_control_plane'][0]
+  when:
+    - not ansible_check_mode 
+    - inventory_hostname == groups['kube_control_plane'][0]
 
 - name: Kubernetes Apps | Cleanup DNS
   import_tasks: cleanup_dns.yml
   when:
+    - not ansible_check_mode
     - inventory_hostname == groups['kube_control_plane'][0]
   tags:
     - upgrade
@@ -23,6 +26,7 @@
 - name: Kubernetes Apps | CoreDNS
   import_tasks: "coredns.yml"
   when:
+    - not ansible_check_mode
     - dns_mode in ['coredns', 'coredns_dual']
     - inventory_hostname == groups['kube_control_plane'][0]
   tags:
@@ -31,6 +35,7 @@
 - name: Kubernetes Apps | nodelocalDNS
   import_tasks: "nodelocaldns.yml"
   when:
+    - not ansible_check_mode
     - enable_nodelocaldns
     - inventory_hostname == groups['kube_control_plane'] | first
   tags:
@@ -49,6 +54,7 @@
     - "{{ coredns_secondary_manifests.results | default({}) }}"
     - "{{ nodelocaldns_manifests.results | default({}) }}"
   when:
+    - not ansible_check_mode 
     - dns_mode != 'none'
     - inventory_hostname == groups['kube_control_plane'][0]
     - not item is skipped
@@ -70,6 +76,8 @@
 
 - name: Kubernetes Apps | Dashboard
   import_tasks: dashboard.yml
-  when: dashboard_enabled
+  when: 
+    - not ansible_check_mode
+    - dashboard_enabled
   tags:
     - dashboard

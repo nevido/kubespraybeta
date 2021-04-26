@@ -177,12 +177,13 @@
     executable: /bin/bash
   register: calico_version_on_server
   async: 10
-  poll: 3
+  poll: 0
   run_once: yes
   changed_when: false
   failed_when: false
   when:
     - kube_network_plugin == 'calico'
+    - not ansible_check_mode
 
 - name: Check that current calico version is enough for upgrade
   assert:
