@@ -20,10 +20,10 @@ bin_dir: /usr/local/bin
 ## apiserver_loadbalancer_domain_name: "elb.some.domain"
 loadbalancer_apiserver:
   address: 10.3.3.6
-  port: 8082
+  port: 80383
 
 ## Internal loadbalancers for apiservers
-# loadbalancer_apiserver_localhost: true
+loadbalancer_apiserver_localhost: false
 # valid options are "nginx" or "haproxy"
 # loadbalancer_apiserver_type: nginx  # valid values "nginx" or "haproxy"
 
