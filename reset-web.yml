@@ -23,8 +23,7 @@
 
 - hosts: etcd:k8s-cluster:calico-rr
   gather_facts: False
-  vars_prompt:
-    name: "reset_confirmation"
+
     
 
   pre_tasks:
