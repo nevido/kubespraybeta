@@ -181,6 +181,8 @@
   failed_when: false
   tags:
     - mounts
+  when:
+    - not ansible_check_mode
 
 - name: reset | unmount kubelet dirs  # noqa 301
   command: umount -f {{ item }}
