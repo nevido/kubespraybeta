@@ -24,3 +24,5 @@
       setup:
         gather_subset: '!all,!min,hardware'
         filter: "ansible_*total_mb"
+      when:
+        - not ansible_check_mode
