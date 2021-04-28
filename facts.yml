@@ -16,6 +16,8 @@
       setup:
         gather_subset: '!all,!min,network'
         filter: "ansible_*_ipv[46]*"
+      when:
+        - not ansible_check_mode
 
     # filter match the following variables:
     # ansible_memtotal_mb
