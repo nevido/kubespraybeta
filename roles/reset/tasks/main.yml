@@ -194,6 +194,9 @@
   delay: 5
   tags:
     - mounts
+  when:
+    - not ansible_check_mode
+ 
 
 - name: flush iptables
   iptables:
