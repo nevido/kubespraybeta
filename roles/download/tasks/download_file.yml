@@ -67,7 +67,9 @@
     retries: 4
     delay: "{{ retry_stagger | default(5) }}"
     environment: "{{ proxy_env }}"
-
+    when:
+      - not ansible_check_mode
+      
   - name: download_file | Copy file back to ansible host file cache
     synchronize:
       src: "{{ file_path_cached }}"
