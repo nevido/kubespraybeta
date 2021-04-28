@@ -8,4 +8,5 @@
     copy: no
     extra_opts: "{{ download.unarchive_extra_opts|default(omit) }}"
   when:
+    - not ansible_check_mode
     - download.unarchive | default(false)
