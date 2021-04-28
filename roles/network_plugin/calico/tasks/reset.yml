@@ -21,3 +21,5 @@
   with_items: "{{ bird_routes.stdout_lines }}"
   loop_control:
     loop_var: bird_route
+  when:
+    - not ansible_check_mode
