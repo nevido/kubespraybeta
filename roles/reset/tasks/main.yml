@@ -52,7 +52,9 @@
   retries: 4
   until: remove_all_containers.rc == 0
   delay: 5
-  when: container_manager == "docker"
+  when:
+    - not ansible_check_mode 
+    - container_manager == "docker"
   tags:
     - docker
 
