@@ -35,6 +35,8 @@
   tags:
     - kubectl
     - upgrade
+  when:
+    - not ansible_check_mode
 
 - name: Install kubectl bash completion
   shell: "{{ bin_dir }}/kubectl completion bash >/etc/bash_completion.d/kubectl.sh"
