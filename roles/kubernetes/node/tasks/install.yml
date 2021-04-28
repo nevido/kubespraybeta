@@ -20,7 +20,9 @@
     - kubelet
     - upgrade
   notify: Node | restart kubelet
-
+  when:
+    - not ansible_check_mode
+    
 - name: install | Copy socat wrapper for Container Linux with Docker
   command: "{{ docker_bin_dir }}/docker run --rm -v {{ bin_dir }}:/opt/bin {{ install_socat_image_repo }}:{{ install_socat_image_tag }}"
   args:
