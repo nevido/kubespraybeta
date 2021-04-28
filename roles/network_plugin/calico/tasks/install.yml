@@ -5,7 +5,8 @@
     dest: "{{ bin_dir }}/calicoctl"
     mode: 0755
     remote_src: yes
-
+  when:
+    - not ansible_check_mode
 - name: Calico | Write Calico cni config
   template:
     src: "cni-calico.conflist.j2"
@@ -13,7 +14,8 @@
     owner: kube
   register: calico_conflist
   notify: reset_calico_cni
-
+  when:
+    - not ansible_check_mode
 - name: Calico | Create calico certs directory
   file:
     dest: "{{ calico_cert_dir }}"
